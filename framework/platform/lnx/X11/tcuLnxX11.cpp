@@ -180,6 +180,16 @@ XlibWindow::XlibWindow (XlibDisplay& display, int width, int height, ::Visual* v
 							 CopyFromParent, InputOutput, visual, mask, &swa);
 	TCU_CHECK(m_window);
 
+	/* Make sure that we don't steal input focus, in case testcases
+	 * are creating and destroying many windows rapidly.  Nothing we
+	 * do uses keyboard input.
+	 */
+	XWMHints *hints = XAllocWMHints();
+	hints->flags |= InputHint;
+	hints->input = False;
+
+	XSetWMHints(dpy, m_window, hints);
+
 	Atom deleteAtom = m_display.getDeleteAtom();
 	XSetWMProtocols(dpy, m_window, &deleteAtom, 1);
 	XSync(dpy,false);
